@@ -21,8 +21,10 @@ app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-here-change-in-pr
 # 配置模板目录 - 使用绝对路径
 app.root_path = os.path.dirname(os.path.abspath(__file__))
 app.template_folder = os.path.join(app.root_path, 'templates')
+app.static_folder = os.path.join(app.root_path, 'static')
 print(f"App root path: {app.root_path}")
 print(f"Template folder: {app.template_folder}")
+print(f"Static folder: {app.static_folder}")
 
 # 用户数据文件路径
 USERS_FILE = os.path.join(app.root_path, 'data', 'users.json')
@@ -75,6 +77,10 @@ def login():
 def logout():
     session.pop('username', None)
     return redirect(url_for('login'))
+
+@app.route('/ico/<path:filename>')
+def serve_ico(filename):
+    return send_file(os.path.join(app.root_path, 'ico', filename))
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
