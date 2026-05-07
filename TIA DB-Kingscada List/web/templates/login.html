@@ -192,6 +192,10 @@
                 togglePassword.innerHTML = type === 'password' ? '<i class="fa fa-eye text-sm"></i>' : '<i class="fa fa-eye-slash text-sm"></i>';
             });
 
+            // Clear username and password on page load
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+
             // Form submission
             loginForm.addEventListener('submit', function(e) {
                 e.preventDefault();
