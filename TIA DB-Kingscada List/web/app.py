@@ -16,7 +16,7 @@ from src.core.converter import TiaToKingscadaConverter
 app = Flask(__name__)
 
 # 配置密钥，用于会话管理
-app.secret_key = 'your-secret-key-here-change-in-production'
+app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-here-change-in-production')
 
 # 配置模板目录 - 使用绝对路径
 app.root_path = os.path.dirname(os.path.abspath(__file__))
