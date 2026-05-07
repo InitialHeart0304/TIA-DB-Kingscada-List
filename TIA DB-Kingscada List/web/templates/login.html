@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - TIA DB 转换工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <style>
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="w-full max-w-md">
+            <div class="bg-white rounded-2xl shadow-xl p-8 border border-slate-100">
+                <div class="text-center mb-8">
+                    <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg mb-4">
+                        <i class="fa fa-plug text-white text-2xl"></i>
+                    </div>
+                    <h1 class="text-2xl font-bold text-slate-800">欢迎回来</h1>
+                    <p class="text-slate-500 mt-2">登录您的账户以继续使用</p>
+                </div>
+
+                <form id="login-form" class="space-y-6">
+                    <div>
+                        <label for="username" class="block text-sm font-medium text-slate-700 mb-2">用户名</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fa fa-user text-slate-400"></i>
+                            </div>
+                            <input 
+                                type="text" 
+                                id="username" 
+                                name="username" 
+                                placeholder="请输入用户名"
+                                class="block w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-slate-50 hover:bg-white"
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-slate-700 mb-2">密码</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fa fa-lock text-slate-400"></i>
+                            </div>
+                            <input 
+                                type="password" 
+                                id="password" 
+                                name="password" 
+                                placeholder="请输入密码"
+                                class="block w-full pl-10 pr-12 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-slate-50 hover:bg-white"
+                                required
+                            />
+                            <button 
+                                type="button" 
+                                id="toggle-password" 
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
+                            >
+                                <i class="fa fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button 
+                        type="submit" 
+                        id="login-btn"
+                        class="w-full py-3 px-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
+                    >
+                        <span class="flex items-center justify-center">
+                            <i class="fa fa-sign-in mr-2"></i>
+                            登录
+                        </span>
+                    </button>
+                </form>
+
+                <div id="error-message" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm text-center hidden">
+                    用户名或密码错误
+                </div>
+
+                <div class="mt-6 pt-6 border-t border-slate-100">
+                    <div class="flex items-center justify-center space-x-4">
+                        <span class="text-slate-400 text-sm">其他登录方式</span>
+                    </div>
+                    <div class="flex items-center justify-center space-x-3 mt-4">
+                        <button class="w-12 h-12 rounded-full border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 transition-all">
+                            <i class="fa fa-google"></i>
+                        </button>
+                        <button class="w-12 h-12 rounded-full border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-green-50 hover:text-green-600 hover:border-green-300 transition-all">
+                            <i class="fa fa-windows"></i>
+                        </button>
+                        <button class="w-12 h-12 rounded-full border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition-all">
+                            <i class="fa fa-apple"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <p class="mt-6 text-center text-slate-400 text-sm">
+                    默认账户: <span class="text-slate-600">admin / admin123</span>
+                </p>
+            </div>
+
+            <p class="mt-6 text-center text-slate-400 text-sm">
+                还没有账户？
+                <a href="#" class="text-blue-600 hover:text-blue-700 font-medium">联系管理员</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const togglePassword = document.getElementById('toggle-password');
+            const passwordInput = document.getElementById('password');
+            const loginForm = document.getElementById('login-form');
+            const errorMessage = document.getElementById('error-message');
+            const loginBtn = document.getElementById('login-btn');
+
+            togglePassword.addEventListener('click', function() {
+                const type = passwordInput.type === 'password' ? 'text' : 'password';
+                passwordInput.type = type;
+                togglePassword.innerHTML = type === 'password' ? '<i class="fa fa-eye"></i>' : '<i class="fa fa-eye-slash"></i>';
+            });
+
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                errorMessage.classList.add('hidden');
+                loginBtn.disabled = true;
+                loginBtn.innerHTML = '<span class="flex items-center justify-center"><i class="fa fa-spinner fa-spin mr-2"></i>登录中...</span>';
+
+                const formData = new FormData(this);
+                
+                fetch('/login', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = '/';
+                    } else {
+                        errorMessage.classList.remove('hidden');
+                        loginBtn.disabled = false;
+                        loginBtn.innerHTML = '<span class="flex items-center justify-center"><i class="fa fa-sign-in mr-2"></i>登录</span>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    errorMessage.textContent = '登录失败，请重试';
+                    errorMessage.classList.remove('hidden');
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = '<span class="flex items-center justify-center"><i class="fa fa-sign-in mr-2"></i>登录</span>';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

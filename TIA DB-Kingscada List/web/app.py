@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify, send_file, session, redirect, url_for
 import pandas as pd
 import re
 import json
@@ -15,18 +15,36 @@ from src.core.converter import TiaToKingscadaConverter
 
 app = Flask(__name__)
 
+# 配置密钥，用于会话管理
+app.secret_key = 'your-secret-key-here-change-in-production'
+
 # 配置模板目录 - 使用绝对路径
 app.root_path = os.path.dirname(os.path.abspath(__file__))
 app.template_folder = os.path.join(app.root_path, 'templates')
 print(f"App root path: {app.root_path}")
 print(f"Template folder: {app.template_folder}")
 
+# 用户数据文件路径
+USERS_FILE = os.path.join(app.root_path, 'data', 'users.json')
+
 # 临时文件存储
 TEMP_DIR = tempfile.gettempdir()
 current_result = None
 
+def load_users():
+    if os.path.exists(USERS_FILE):
+        with open(USERS_FILE, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    return []
+
+def check_login():
+    return 'username' in session
+
 @app.route('/')
 def index():
+    if not check_login():
+        return redirect(url_for('login'))
+    
     current_date = datetime.now().strftime("%Y年%m月%d日")
     # 打印模板文件路径，用于调试
     template_path = os.path.join(app.template_folder, 'index.html')
@@ -34,8 +52,35 @@ def index():
     print(f"Template exists: {os.path.exists(template_path)}")
     return render_template('index.html', current_date=current_date)
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        users = load_users()
+        for user in users:
+            if user['username'] == username and user['password'] == password:
+                session['username'] = username
+                return jsonify({'success': True})
+        
+        return jsonify({'success': False, 'message': '用户名或密码错误'})
+    
+    if check_login():
+        return redirect(url_for('index'))
+    
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.pop('username', None)
+    return redirect(url_for('login'))
+
 @app.route('/upload', methods=['POST'])
 def upload_file():
+    if not check_login():
+        return jsonify({'success': False, 'error': '请先登录'})
+        
     if 'file' not in request.files:
         return jsonify({'success': False, 'error': 'No file part'})
     
@@ -50,6 +95,9 @@ def upload_file():
 
 @app.route('/convert', methods=['POST'])
 def convert():
+    if not check_login():
+        return jsonify({'success': False, 'error': '请先登录'})
+        
     global current_result
     
     # 获取文件内容
@@ -105,6 +153,9 @@ def convert():
 
 @app.route('/download')
 def download():
+    if not check_login():
+        return jsonify({'success': False, 'error': '请先登录'})
+        
     global current_result
     
     if not current_result:
