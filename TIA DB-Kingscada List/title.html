@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>三选项导航栏 | 首页 · 校核 · 导出</title>
+    <style>
+        /* ==================== 全局重置 & 基础样式 ==================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(145deg, #f6f9fc 0%, #eef2f5 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1.5rem;
+            color: #1f2937;
+        }
+
+        /* 主容器：让内容居中且有呼吸感 */
+        .container {
+            width: 100%;
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        /* ==================== 导航栏设计 ==================== */
+        /* 现代卡片式导航栏，圆润轻盈 */
+        .nav-card {
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(0px);
+            border-radius: 2rem;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.02);
+            transition: box-shadow 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .nav-card:hover {
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.12);
+        }
+
+        /* 导航栏内部布局 */
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            min-height: 80px;
+        }
+
+        /* 使用语义化 ul 列表结构，完全符合无障碍要求 */
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 0.5rem;
+            background: transparent;
+        }
+
+        /* 每个导航项容器 */
+        .nav-item {
+            position: relative;
+        }
+
+        /* 优雅的导航链接样式 */
+        .nav-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.7rem 1.8rem;
+            font-size: 1.05rem;
+            font-weight: 500;
+            color: #4b5563;
+            text-decoration: none;
+            border-radius: 2.5rem;
+            transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
+            background: transparent;
+            letter-spacing: 0.3px;
+            backdrop-filter: blur(0px);
+            cursor: pointer;
+        }
+
+        /* 图标样式 */
+        .nav-icon {
+            font-size: 1.25rem;
+            filter: drop-shadow(0 1px 1px rgba(0,0,0,0.05));
+            transition: transform 0.2s ease;
+        }
+
+        /* 悬浮效果 */
+        .nav-link:hover {
+            background: rgba(59, 130, 246, 0.08);
+            color: #1e40af;
+            transform: translateY(-1px);
+        }
+
+        .nav-link:hover .nav-icon {
+            transform: scale(1.05);
+        }
+
+        /* 活动状态（当前选中项）设计：高亮主色 + 底部光效 + 轻微阴影 */
+        .nav-link.active {
+            background: linear-gradient(115deg, #2563eb, #1d4ed8);
+            color: white;
+            box-shadow: 0 8px 18px -6px rgba(37, 99, 235, 0.35);
+            font-weight: 600;
+        }
+
+        .nav-link.active .nav-icon {
+            filter: drop-shadow(0 0 2px rgba(255,255,255,0.3));
+            transform: scale(1.02);
+        }
+
+        /* 焦点样式 - 键盘导航可见性 */
+        .nav-link:focus-visible {
+            outline: 3px solid #2563eb;
+            outline-offset: 3px;
+            border-radius: 2.5rem;
+            background-color: rgba(37, 99, 235, 0.1);
+        }
+
+        /* ==================== 内容区域设计 ==================== */
+        .content-wrapper {
+            margin-top: 3rem;
+            background: #ffffff;
+            border-radius: 2rem;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(226, 232, 240, 0.6);
+        }
+
+        /* 内容面板容器 */
+        .panels-container {
+            padding: 2rem 2rem 2.5rem;
+            min-height: 380px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 单个内容面板，默认隐藏，通过 active-pane 控制显示 */
+        .pane {
+            display: none;
+            animation: fadeSlideUp 0.35s ease forwards;
+        }
+
+        .pane.active-pane {
+            display: block;
+        }
+
+        /* 优雅的内容动画 */
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 内容卡片内的装饰与排版 */
+        .pane h2 {
+            font-size: 1.9rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1f2937, #2d3a4b);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            margin-bottom: 1rem;
+            letter-spacing: -0.3px;
+        }
+
+        .pane .highlight {
+            font-size: 1.1rem;
+            color: #2563eb;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            display: inline-block;
+            border-left: 4px solid #2563eb;
+            padding-left: 0.75rem;
+        }
+
+        .pane p {
+            line-height: 1.6;
+            margin: 1rem 0;
+            color: #334155;
+            font-size: 1rem;
+        }
+
+        .pane .card-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.2rem;
+            margin-top: 1.8rem;
+        }
+
+        .info-card {
+            background: #f8fafc;
+            border-radius: 1.25rem;
+            padding: 1rem 1.2rem;
+            flex: 1 1 180px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+        }
+
+        .info-card strong {
+            display: block;
+            font-size: 1.2rem;
+            color: #0f172a;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-card p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #475569;
+        }
+
+        .action-demo {
+            background: #f1f5f9;
+            padding: 1rem 1.5rem;
+            border-radius: 1.2rem;
+            margin: 1rem 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 1rem;
+            color: #1e293b;
+            flex-wrap: wrap;
+        }
+
+        .demo-button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 2rem;
+            padding: 0.5rem 1.2rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-family: inherit;
+        }
+
+        .demo-button:hover {
+            background: #1d4ed8;
+        }
+
+        .badge {
+            background: #e6f0ff;
+            color: #2563eb;
+            border-radius: 2rem;
+            padding: 0.25rem 0.8rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        /* ==================== 响应式设计 ==================== */
+        @media (max-width: 680px) {
+            body {
+                padding: 1.2rem;
+            }
+            
+            .navbar {
+                padding: 0.5rem 1rem;
+                min-height: 70px;
+            }
+
+            .nav-links {
+                gap: 0.25rem;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .nav-link {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+                gap: 0.3rem;
+            }
+
+            .nav-icon {
+                font-size: 1.1rem;
+            }
+
+            .panels-container {
+                padding: 1.5rem;
+            }
+
+            .pane h2 {
+                font-size: 1.5rem;
+            }
+
+            .info-card {
+                flex: 1 1 100%;
+            }
+
+            .action-demo {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-link {
+                padding: 0.45rem 0.85rem;
+                font-size: 0.85rem;
+            }
+            .nav-icon {
+                font-size: 1rem;
+            }
+        }
+
+        @media (min-width: 1440px) {
+            .container {
+                max-width: 1400px;
+            }
+            .panels-container {
+                padding: 2.5rem 3rem;
+            }
+        }
+
+        .design-footer {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 0.8rem;
+            color: #6c757d;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- 三选项导航栏：首页 · 校核 · 导出 -->
+    <div class="nav-card">
+        <nav class="navbar" aria-label="主导航">
+            <ul class="nav-links" role="list">
+                <!-- 选项1: 首页 -->
+                <li class="nav-item" role="listitem">
+                    <a href="#" class="nav-link" data-tab="home" id="tab-home" aria-current="page">
+                        <span class="nav-icon">🏠</span>
+                        <span>首页</span>
+                    </a>
+                </li>
+                <!-- 选项2: 校核 -->
+                <li class="nav-item" role="listitem">
+                    <a href="#" class="nav-link" data-tab="verify" id="tab-verify">
+                        <span class="nav-icon">✅</span>
+                        <span>校核</span>
+                    </a>
+                </li>
+                <!-- 选项3: 导出 -->
+                <li class="nav-item" role="listitem">
+                    <a href="#" class="nav-link" data-tab="export" id="tab-export">
+                        <span class="nav-icon">📤</span>
+                        <span>导出</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- 动态内容区域 -->
+    <div class="content-wrapper">
+        <div class="panels-container">
+            <!-- 首页内容面板 -->
+            <div class="pane" id="homePane" data-pane="home">
+                <div class="badge" style="margin-bottom: 1rem;">✦ 三选项导航演示</div>
+                <h2>高效导航 · 清晰架构</h2>
+                <div class="highlight">首页 · 校核 · 导出，一键直达</div>
+                <p>现代化导航栏设计，完美支持响应式布局与交互反馈。三个核心功能入口，帮助您快速完成数据查看、校核审批与文件导出任务。</p>
+                <div class="card-grid">
+                    <div class="info-card">
+                        <strong>🏠 首页概览</strong>
+                        <p>聚合关键信息与操作指引，掌控全局动态。</p>
+                    </div>
+                    <div class="info-card">
+                        <strong>✅ 智能校核</strong>
+                        <p>多维度数据校验，确保准确性与合规性。</p>
+                    </div>
+                    <div class="info-card">
+                        <strong>📤 一键导出</strong>
+                        <p>支持多种格式，安全高效归档重要资料。</p>
+                    </div>
+                </div>
+                <p>⬤ 当前导航栏支持平滑切换、悬浮动画、键盘焦点及移动端适配，为用户提供无感流畅体验。</p>
+            </div>
+
+            <!-- 校核内容面板 -->
+            <div class="pane" id="verifyPane" data-pane="verify">
+                <div class="badge" style="margin-bottom: 1rem;">🔍 数据校验 · 审核清单</div>
+                <h2>精准校核中心</h2>
+                <div class="highlight">双重验证 · 自动比对 · 异常预警</div>
+                <p>对关键数据进行完整性、一致性及逻辑性检查。以下为近期校核任务示例，可快速定位待处理项。</p>
+                <div class="card-grid">
+                    <div class="info-card">
+                        <strong>📋 文档完整性</strong>
+                        <p>已校核 24/28 份报告，缺失项已标记。</p>
+                        <span class="badge" style="margin-top: 8px;">进行中</span>
+                    </div>
+                    <div class="info-card">
+                        <strong>⚖️ 数据一致性</strong>
+                        <p>比对数据库与源文件，一致率 98.3% 。</p>
+                        <span class="badge" style="margin-top: 8px;">通过</span>
+                    </div>
+                    <div class="info-card">
+                        <strong>🚨 异常预警</strong>
+                        <p>发现 2 处逻辑冲突，待人工复核。</p>
+                        <span class="badge" style="margin-top: 8px;">需关注</span>
+                    </div>
+                </div>
+                <div class="action-demo">
+                    <span>🔧 校核工具演示：</span>
+                    <button class="demo-button" id="simulateVerifyBtn" type="button">模拟执行校核</button>
+                    <span id="verifyResult" style="font-size: 0.9rem; color: #2c6e2c;"></span>
+                </div>
+                <p>✔️ 支持自定义校核规则，实时输出校核报告，辅助决策。</p>
+            </div>
+
+            <!-- 导出内容面板 -->
+            <div class="pane" id="exportPane" data-pane="export">
+                <div class="badge" style="margin-bottom: 1rem;">💾 多格式 · 灵活归档</div>
+                <h2>数据导出中心</h2>
+                <div class="highlight">一键导出 · 加密保护 · 跨平台兼容</div>
+                <p>将校核完成或选定的数据导出为常见格式，便于存档、分享或二次分析。</p>
+                <div class="card-grid">
+                    <div class="info-card">
+                        <strong>📄 PDF 报告</strong>
+                        <p>保留排版样式，适合打印与正式交付。</p>
+                    </div>
+                    <div class="info-card">
+                        <strong>📊 Excel/CSV</strong>
+                        <p>数据表结构导出，便于后续处理分析。</p>
+                    </div>
+                    <div class="info-card">
+                        <strong>📦 批量打包</strong>
+                        <p>多文件压缩导出，支持加密选项。</p>
+                    </div>
+                </div>
+                <div class="action-demo">
+                    <span>📎 导出示例：</span>
+                    <button class="demo-button" id="exportCsvBtn" type="button">导出校核结果 (CSV)</button>
+                    <button class="demo-button" id="exportPdfBtn" type="button">导出模拟报告 (PDF演示)</button>
+                </div>
+                <p>✨ 所有导出操作均提供进度反馈，支持大文件分片处理，确保数据安全。</p>
+            </div>
+        </div>
+    </div>
+    <div class="design-footer">
+        🌟 三选项导航栏 | 首页 · 校核 · 导出 | 流畅切换 · 全响应式
+    </div>
+</div>
+
+<script>
+    (function() {
+        // 获取所有导航链接和对应的内容面板
+        const navLinks = document.querySelectorAll('.nav-link');
+        const panes = document.querySelectorAll('.pane');
+
+        // 辅助函数：移除所有导航项的 active 类、移除所有面板的 active-pane 类
+        function deactivateAll() {
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                link.setAttribute('aria-current', 'false');
+            });
+            panes.forEach(pane => {
+                pane.classList.remove('active-pane');
+            });
+        }
+
+        // 激活指定 tab (根据 data-tab 值)
+        function activateTab(tabId) {
+            // 找到匹配的导航项
+            let targetLink = null;
+            for (let link of navLinks) {
+                const linkTab = link.getAttribute('data-tab');
+                if (linkTab === tabId) {
+                    targetLink = link;
+                    break;
+                }
+            }
+            if (!targetLink) return;
+
+            // 找到对应的内容面板 (data-pane 匹配)
+            let targetPane = null;
+            for (let pane of panes) {
+                const paneName = pane.getAttribute('data-pane');
+                if (paneName === tabId) {
+                    targetPane = pane;
+                    break;
+                }
+            }
+            // 后备通过id查找
+            if (!targetPane) {
+                targetPane = document.getElementById(`${tabId}Pane`);
+            }
+            if (!targetPane) return;
+
+            deactivateAll();
+            targetLink.classList.add('active');
+            targetLink.setAttribute('aria-current', 'page');
+            targetPane.classList.add('active-pane');
+        }
+
+        // 点击导航处理
+        function onNavClick(event) {
+            event.preventDefault();
+            const link = event.currentTarget;
+            const tabValue = link.getAttribute('data-tab');
+            if (!tabValue) return;
+            if (link.classList.contains('active')) return;
+            activateTab(tabValue);
+        }
+
+        // 绑定事件
+        navLinks.forEach(link => {
+            link.addEventListener('click', onNavClick);
+        });
+
+        // 初始化默认激活首页
+        const anyActive = Array.from(navLinks).some(link => link.classList.contains('active'));
+        if (!anyActive) {
+            activateTab('home');
+        } else {
+            // 同步面板
+            let activeLink = document.querySelector('.nav-link.active');
+            if (activeLink) {
+                const activeTab = activeLink.getAttribute('data-tab');
+                if (activeTab) activateTab(activeTab);
+            } else {
+                activateTab('home');
+            }
+        }
+
+        // 额外安全: 确保只有一个面板可见
+        const visiblePane = Array.from(panes).some(pane => pane.classList.contains('active-pane'));
+        if (!visiblePane) activateTab('home');
+
+        // ========== 交互增强: 校核模拟 + 导出演示 (仅前端展示，不涉及真实后端) ==========
+        const verifyBtn = document.getElementById('simulateVerifyBtn');
+        const verifyResultSpan = document.getElementById('verifyResult');
+        if (verifyBtn && verifyResultSpan) {
+            verifyBtn.addEventListener('click', () => {
+                verifyResultSpan.textContent = ' 🔄 校核中...';
+                setTimeout(() => {
+                    const randomStatus = Math.random() > 0.3 ? '校核通过，所有数据符合规范。' : '发现 1 处不一致，请查看详细日志。';
+                    verifyResultSpan.textContent = ` ${randomStatus}`;
+                    if (randomStatus.includes('不一致')) {
+                        verifyResultSpan.style.color = '#c2410c';
+                    } else {
+                        verifyResultSpan.style.color = '#2c6e2c';
+                    }
+                }, 800);
+            });
+        }
+
+        // 导出 CSV 模拟
+        const exportCsvBtn = document.getElementById('exportCsvBtn');
+        if (exportCsvBtn) {
+            exportCsvBtn.addEventListener('click', () => {
+                // 模拟数据
+                const mockData = [
+                    ['项目名称', '校核状态', '日期'],
+                    ['年度报告', '通过', '2025-03-21'],
+                    ['预算明细', '需复核', '2025-03-22'],
+                    ['合规文档', '通过', '2025-03-20']
+                ];
+                const csvContent = mockData.map(row => row.join(',')).join('\n');
+                const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                link.href = url;
+                link.setAttribute('download', '校核结果.csv');
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                // 提示
+                const toastMsg = document.createElement('div');
+                toastMsg.textContent = '✅ 校核结果 CSV 已导出';
+                toastMsg.style.position = 'fixed';
+                toastMsg.style.bottom = '20px';
+                toastMsg.style.left = '50%';
+                toastMsg.style.transform = 'translateX(-50%)';
+                toastMsg.style.backgroundColor = '#1f2937';
+                toastMsg.style.color = 'white';
+                toastMsg.style.padding = '8px 20px';
+                toastMsg.style.borderRadius = '40px';
+                toastMsg.style.fontSize = '0.85rem';
+                toastMsg.style.zIndex = '999';
+                toastMsg.style.opacity = '0.9';
+                document.body.appendChild(toastMsg);
+                setTimeout(() => toastMsg.remove(), 2000);
+            });
+        }
+
+        // 导出 PDF 演示 (生成一个简单的模拟 PDF 提醒，实际不生成复杂pdf，演示交互)
+        const exportPdfBtn = document.getElementById('exportPdfBtn');
+        if (exportPdfBtn) {
+            exportPdfBtn.addEventListener('click', () => {
+                alert('📄 演示模式：实际应用中会调用后端生成PDF报告。\n当前导航栏设计聚焦于前端展示，模拟导出功能已触发。');
+                // 也可以提供简单的文本保存
+                const reportText = `校核报告\n生成时间：${new Date().toLocaleString()}\n校核项数量：3\n异常项：0\n建议：所有数据符合导出要求。`;
+                const blob = new Blob([reportText], { type: 'application/pdf' }); // 实际为txt模拟，仅示意
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = '模拟报告.pdf';
+                link.click();
+                URL.revokeObjectURL(blob);
+            });
+        }
+
+        // 保证任何动态下键盘可访问性
+        window.addEventListener('load', () => {
+            const activeLink = document.querySelector('.nav-link.active');
+            if (!activeLink) activateTab('home');
+            // 校核按钮初始无额外操作
+        });
+    })();
+</script>
+</body>
+</html>

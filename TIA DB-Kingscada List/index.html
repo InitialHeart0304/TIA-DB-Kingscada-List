@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TIA DB块转Kingscads点表工具 - 文件上传</title>
+<script src="https://modao.cc/agent-py/static/source/js/tailwindcss.3.4.3.js"></script>
+<script src="https://modao.cc/agent-py/static/source/js/iconify-icon.min.1.0.7.js"></script>
+<style>
+        @font-face {
+            font-family: 'Inter';
+            src: url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        }
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: #f8fafc; }
+        .step-active { color: #2563eb; font-weight: 600; border-bottom: 2px solid #2563eb; }
+        .upload-area:hover { border-color: #3b82f6; background-color: #eff6ff; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+<!-- 顶部导航 -->
+<header class="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center sticky top-0 z-50">
+<div class="flex items-center gap-3">
+<div class="bg-blue-600 p-2 rounded-lg">
+<iconify-icon class="text-white text-2xl" icon="mdi:plc"></iconify-icon>
+</div>
+<div>
+<h1 class="text-xl font-bold text-slate-800">TIA DB 转换专家</h1>
+<p class="text-xs text-slate-400">工业自动化点表自动化工具 v2.4.0</p>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="text-sm text-slate-500">
+<span class="mr-2">当前日期:</span>
+<span class="font-medium text-slate-800">2026年04月16日</span>
+</div>
+<a class="flex items-center gap-1 text-sm text-slate-600 hover:text-blue-600 transition-colors" href="history.html">
+<iconify-icon icon="mdi:history"></iconify-icon>
+                转换历史
+            </a>
+<div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center">
+<iconify-icon class="text-slate-500" icon="mdi:account"></iconify-icon>
+</div>
+</div>
+</header>
+<!-- 向导步骤条 -->
+<nav class="bg-white border-b border-slate-100 shadow-sm">
+<div class="max-w-4xl mx-auto px-4 py-6">
+<div class="flex justify-between items-center relative">
+<!-- 进度条背景线 -->
+<div class="absolute top-1/2 left-0 w-full h-0.5 bg-slate-100 -translate-y-1/2 z-0"></div>
+<!-- 步骤 1 -->
+<div class="relative z-10 flex flex-col items-center gap-2 bg-white px-4">
+<div class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-lg shadow-blue-200">
+                        1
+                    </div>
+<span class="text-sm font-semibold text-blue-600">选择文件</span>
+</div>
+<!-- 步骤 2 -->
+<div class="relative z-10 flex flex-col items-center gap-2 bg-white px-4">
+<div class="w-10 h-10 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center">
+                        2
+                    </div>
+<span class="text-sm font-medium text-slate-400">转换分析</span>
+</div>
+<!-- 步骤 3 -->
+<div class="relative z-10 flex flex-col items-center gap-2 bg-white px-4">
+<div class="w-10 h-10 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center">
+                        3
+                    </div>
+<span class="text-sm font-medium text-slate-400">检查核对</span>
+</div>
+<!-- 步骤 4 -->
+<div class="relative z-10 flex flex-col items-center gap-2 bg-white px-4">
+<div class="w-10 h-10 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center">
+                        4
+                    </div>
+<span class="text-sm font-medium text-slate-400">导出结果</span>
+</div>
+</div>
+</div>
+</nav>
+<!-- 主体内容 -->
+<main class="flex-grow max-w-6xl mx-auto w-full p-8 grid grid-cols-3 gap-8">
+<!-- 左侧：文件上传区 -->
+<div class="col-span-2 space-y-6">
+<div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+<h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+<iconify-icon class="text-blue-500" icon="mdi:file-upload-outline"></iconify-icon>
+                    上传 TIA Portal DB 块源文件
+                </h3>
+<div class="upload-area border-2 border-dashed border-slate-200 rounded-xl py-20 px-4 flex flex-col items-center transition-all cursor-pointer">
+<div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mb-4">
+<iconify-icon class="text-4xl text-blue-500" icon="mdi:file-document-edit-outline"></iconify-icon>
+</div>
+<p class="text-lg font-medium text-slate-700">点击或将文件拖拽至此处</p>
+<p class="text-sm text-slate-400 mt-2">支持 .db / .scl / .xml 格式 (最大 20MB)</p>
+<button class="mt-6 px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-medium flex items-center gap-2">
+<iconify-icon icon="mdi:plus"></iconify-icon>
+                        浏览本地文件
+                    </button>
+</div>
+<!-- 已选中文件预览 (隐藏，逻辑触发显示) -->
+<div class="mt-6 p-4 bg-slate-50 rounded-lg border border-slate-100 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<iconify-icon class="text-2xl" icon="vscode-icons:file-type-excel"></iconify-icon>
+<div>
+<p class="text-sm font-medium text-slate-800">MachineData_Block_1001.scl</p>
+<p class="text-xs text-slate-400">248 KB · 就绪</p>
+</div>
+</div>
+<button class="text-slate-400 hover:text-red-500">
+<iconify-icon icon="mdi:close-circle"></iconify-icon>
+</button>
+</div>
+</div>
+<!-- 操作提示 -->
+<div class="bg-amber-50 border border-amber-200 p-4 rounded-xl flex gap-3">
+<iconify-icon class="text-amber-500 text-xl" icon="mdi:information"></iconify-icon>
+<div class="text-sm text-amber-800">
+<p class="font-bold mb-1">提示：</p>
+<p>请确保 DB 块未启用“优化块访问”，否则无法准确计算偏移地址。对于数组类型，转换器将自动展开为单个点位。</p>
+</div>
+</div>
+</div>
+<!-- 右侧：配置参数 -->
+<div class="col-span-1 space-y-6">
+<div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+<h3 class="text-md font-bold text-slate-800 mb-6 flex items-center gap-2">
+<iconify-icon class="text-blue-500" icon="mdi:cog-outline"></iconify-icon>
+                    转换配置参数
+                </h3>
+<div class="space-y-5">
+<div>
+<label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">PLC 站号 (Station No.)</label>
+<input class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:outline-none text-slate-800" type="number" value="1"/>
+</div>
+<div>
+<label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">起始 DB 地址偏移</label>
+<input class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:outline-none text-slate-800" type="number" value="0"/>
+</div>
+<div>
+<label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Kingscads 变量前缀</label>
+<input class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:outline-none text-slate-800" placeholder="例如: PLC1_" type="text"/>
+</div>
+<div>
+<label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">自动展开数组</label>
+<div class="flex items-center gap-3 mt-1">
+<button class="w-12 h-6 bg-blue-600 rounded-full relative p-1 transition-all">
+<div class="w-4 h-4 bg-white rounded-full ml-auto"></div>
+</button>
+<span class="text-sm text-slate-600">已开启</span>
+</div>
+</div>
+</div>
+<div class="mt-8 pt-8 border-t border-slate-100">
+<a class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-100 transition-all flex items-center justify-center gap-2" href="dashboard.html">
+                        开始转换分析
+                        <iconify-icon icon="mdi:arrow-right"></iconify-icon>
+</a>
+</div>
+</div>
+<!-- 支持说明 -->
+<div class="p-6 bg-slate-800 rounded-2xl text-white">
+<h4 class="font-bold mb-3 flex items-center gap-2">
+<iconify-icon class="text-blue-400" icon="mdi:check-decagram"></iconify-icon>
+                    兼容性说明
+                </h4>
+<ul class="text-xs space-y-2 text-slate-300">
+<li class="flex items-center gap-2">
+<iconify-icon class="text-green-400" icon="mdi:check"></iconify-icon>
+                        TIA Portal V14 / V15 / V16 / V17 / V18
+                    </li>
+<li class="flex items-center gap-2">
+<iconify-icon class="text-green-400" icon="mdi:check"></iconify-icon>
+                        支持 UDT 用户自定义数据类型
+                    </li>
+<li class="flex items-center gap-2">
+<iconify-icon class="text-green-400" icon="mdi:check"></iconify-icon>
+                        Kingscads V3.5+ 点表协议
+                    </li>
+</ul>
+</div>
+</div>
+</main>
+<!-- 页脚 -->
+<footer class="bg-white border-t border-slate-200 py-6 text-center">
+<p class="text-sm text-slate-400">© 2026 工业自动化点表工具 - 助力工程师实现效率飞跃</p>
+</footer>
+</body>
+</html>

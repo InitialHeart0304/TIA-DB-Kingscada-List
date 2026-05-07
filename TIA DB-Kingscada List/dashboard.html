@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TIA DB块转Kingscads点表工具 - 结果分析</title>
+<script src="https://modao.cc/agent-py/static/source/js/tailwindcss.3.4.3.js"></script>
+<script src="https://modao.cc/agent-py/static/source/js/iconify-icon.min.1.0.7.js"></script>
+<script src="https://modao.cc/agent-py/static/source/js/echarts.min.5.4.3.js"></script>
+<style>
+        @font-face {
+            font-family: 'Inter';
+            src: url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        }
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: #f8fafc; }
+        .data-card { background-color: white; border: 1px solid #f1f5f9; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        .table-container { height: calc(100vh - 480px); overflow-y: auto; }
+        .scrollbar-hide::-webkit-scrollbar { width: 6px; }
+        .scrollbar-hide::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+<!-- 顶部导航 -->
+<header class="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center sticky top-0 z-50">
+<div class="flex items-center gap-3">
+<div class="bg-blue-600 p-2 rounded-lg">
+<iconify-icon class="text-white text-2xl" icon="mdi:plc"></iconify-icon>
+</div>
+<div>
+<h1 class="text-xl font-bold text-slate-800 uppercase">TIA DB 转换分析</h1>
+<p class="text-xs text-slate-400">正在分析: DB1001_MachineData.scl</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-600 text-xs font-bold rounded-full">
+<div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                转换完成
+            </div>
+<div class="h-6 w-px bg-slate-200 mx-2"></div>
+<button class="px-4 py-2 text-sm font-medium text-slate-600 hover:text-red-600 flex items-center gap-1 transition-colors" onclick="window.location.href='index.html'">
+<iconify-icon icon="mdi:refresh"></iconify-icon>
+                清空结果
+            </button>
+<button class="px-5 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 shadow-lg shadow-blue-100 flex items-center gap-2" onclick="window.location.href='success.html'">
+<iconify-icon icon="mdi:export-variant"></iconify-icon>
+                导出结果
+            </button>
+</div>
+</header>
+<!-- 向导步骤条 (Step 3 Highlighted) -->
+<nav class="bg-white border-b border-slate-100 shadow-sm">
+<div class="max-w-4xl mx-auto px-4 py-6">
+<div class="flex justify-between items-center relative">
+<div class="absolute top-1/2 left-0 w-full h-0.5 bg-blue-500 -translate-y-1/2 z-0"></div>
+<!-- 步骤 1: 完成 -->
+<div class="relative z-10 flex flex-col items-center gap-2 bg-white px-4">
+<div class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center">
+<iconify-icon class="text-xl" icon="mdi:check"></iconify-icon>
+</div>
+<span class="text-sm font-medium text-blue-600">选择文件</span>
+</div>
+<!-- 步骤 2: 完成 -->
+<div class="relative z-10 flex flex-col items-center gap-2 bg-white px-4">
+<div class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center">
+<iconify-icon class="text-xl" icon="mdi:check"></iconify-icon>
+</div>
+<span class="text-sm font-medium text-blue-600">转换分析</span>
+</div>
+<!-- 步骤 3: 当前 -->
+<div class="relative z-10 flex flex-col items-center gap-2 bg-white px-4">
+<div class="w-12 h-12 -mt-1 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-lg shadow-blue-300 ring-4 ring-blue-50">
+                        3
+                    </div>
+<span class="text-sm font-bold text-blue-600">检查核对</span>
+</div>
+<!-- 步骤 4: 未完成 -->
+<div class="relative z-10 flex flex-col items-center gap-2 bg-white px-4">
+<div class="w-10 h-10 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center">
+                        4
+                    </div>
+<span class="text-sm font-medium text-slate-400">导出结果</span>
+</div>
+</div>
+</div>
+</nav>
+<!-- 统计仪表盘 -->
+<main class="flex-grow p-6 space-y-6">
+<!-- 数据卡片行 -->
+<section class="grid grid-cols-4 gap-6">
+<div class="data-card p-6 flex items-center gap-4">
+<div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center">
+<iconify-icon class="text-3xl text-blue-600" icon="mdi:chart-scatter-plot"></iconify-icon>
+</div>
+<div>
+<p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">总点位数量</p>
+<p class="text-2xl font-bold text-slate-800">1,284</p>
+</div>
+</div>
+<div class="data-card p-6 flex items-center gap-4">
+<div class="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center">
+<iconify-icon class="text-3xl text-indigo-600" icon="mdi:memory"></iconify-icon>
+</div>
+<div>
+<p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">占用内存 (Bytes)</p>
+<p class="text-2xl font-bold text-slate-800">4,512.0</p>
+</div>
+</div>
+<div class="data-card p-6 flex items-center gap-4">
+<div class="w-14 h-14 bg-teal-50 rounded-2xl flex items-center justify-center">
+<iconify-icon class="text-3xl text-teal-600" icon="mdi:router-wireless"></iconify-icon>
+</div>
+<div>
+<p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">逻辑设备数</p>
+<p class="text-2xl font-bold text-slate-800">14</p>
+</div>
+</div>
+<div class="data-card p-6 flex items-center gap-4 border-l-4 border-l-amber-400">
+<div class="w-14 h-14 bg-amber-50 rounded-2xl flex items-center justify-center">
+<iconify-icon class="text-3xl text-amber-600" icon="mdi:alert-circle-outline"></iconify-icon>
+</div>
+<div>
+<p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">潜在地址冲突</p>
+<p class="text-2xl font-bold text-slate-800">3</p>
+</div>
+</div>
+</section>
+<!-- 图表与表格混合区 -->
+<section class="grid grid-cols-12 gap-6">
+<!-- 可视化图表 -->
+<div class="col-span-4 bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+<h3 class="text-sm font-bold text-slate-800 mb-4 flex justify-between items-center">
+                    变量类型分布
+                    <iconify-icon class="text-slate-300" icon="mdi:help-circle-outline"></iconify-icon>
+</h3>
+<div class="w-full h-64" id="typeDistChart"></div>
+<div class="mt-4 grid grid-cols-2 gap-4">
+<div class="p-3 bg-slate-50 rounded-lg">
+<p class="text-xs text-slate-400">BOOL (数字量)</p>
+<p class="text-lg font-bold text-blue-600">842 <span class="text-xs font-normal">个</span></p>
+</div>
+<div class="p-3 bg-slate-50 rounded-lg">
+<p class="text-xs text-slate-400">REAL (浮点数)</p>
+<p class="text-lg font-bold text-teal-600">215 <span class="text-xs font-normal">个</span></p>
+</div>
+</div>
+</div>
+<!-- 数据表格 -->
+<div class="col-span-8 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+<div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+<div class="flex items-center gap-4">
+<h3 class="text-sm font-bold text-slate-800">转换点位列表 (详细)</h3>
+<div class="relative">
+<iconify-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" icon="mdi:magnify"></iconify-icon>
+<input class="pl-10 pr-4 py-1.5 text-xs border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 w-64" placeholder="搜索变量名/地址..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-slate-400 hover:bg-slate-50 rounded-lg transition-colors"><iconify-icon icon="mdi:filter-variant"></iconify-icon></button>
+<button class="p-2 text-slate-400 hover:bg-slate-50 rounded-lg transition-colors"><iconify-icon icon="mdi:cog"></iconify-icon></button>
+</div>
+</div>
+<div class="table-container scrollbar-hide">
+<table class="w-full text-left text-xs border-collapse">
+<thead class="bg-slate-50 sticky top-0 z-10 text-slate-500 uppercase font-semibold">
+<tr>
+<th class="px-6 py-4">序号</th>
+<th class="px-6 py-4">Kingscads 变量名</th>
+<th class="px-6 py-4">PLC 地址</th>
+<th class="px-6 py-4">偏移 (Offset)</th>
+<th class="px-6 py-4">类型</th>
+<th class="px-6 py-4">描述</th>
+<th class="px-6 py-4 text-center">状态</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-50 text-slate-700">
+<tr class="hover:bg-blue-50/50 transition-colors">
+<td class="px-6 py-3">1</td>
+<td class="px-6 py-3 font-medium text-slate-900">PLC1_Emergency_Stop</td>
+<td class="px-6 py-3">DB1001.DBX0.0</td>
+<td class="px-6 py-3">0.0</td>
+<td class="px-6 py-3"><span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-[10px] font-bold">BOOL</span></td>
+<td class="px-6 py-3 text-slate-400">全局急停信号</td>
+<td class="px-6 py-3 text-center text-green-500"><iconify-icon icon="mdi:check-circle"></iconify-icon></td>
+</tr>
+<tr class="hover:bg-blue-50/50 transition-colors">
+<td class="px-6 py-3">2</td>
+<td class="px-6 py-3 font-medium text-slate-900">PLC1_System_Ready</td>
+<td class="px-6 py-3">DB1001.DBX0.1</td>
+<td class="px-6 py-3">0.1</td>
+<td class="px-6 py-3"><span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-[10px] font-bold">BOOL</span></td>
+<td class="px-6 py-3 text-slate-400">系统就绪指示</td>
+<td class="px-6 py-3 text-center text-green-500"><iconify-icon icon="mdi:check-circle"></iconify-icon></td>
+</tr>
+<tr class="hover:bg-blue-50/50 transition-colors">
+<td class="px-6 py-3 text-amber-600 font-bold">3</td>
+<td class="px-6 py-3 font-medium text-slate-900">PLC1_Motor_Speed_Set</td>
+<td class="px-6 py-3">DB1001.DBD2.0</td>
+<td class="px-6 py-3">2.0</td>
+<td class="px-6 py-3"><span class="px-2 py-1 bg-teal-100 text-teal-700 rounded text-[10px] font-bold">REAL</span></td>
+<td class="px-6 py-3 text-slate-400">主电机设定频率</td>
+<td class="px-6 py-3 text-center text-amber-500"><iconify-icon icon="mdi:alert-decagram" title="地址重叠风险"></iconify-icon></td>
+</tr>
+<tr class="hover:bg-blue-50/50 transition-colors">
+<td class="px-6 py-3">4</td>
+<td class="px-6 py-3 font-medium text-slate-900">PLC1_Temp_Sensor_1</td>
+<td class="px-6 py-3">DB1001.DBD6.0</td>
+<td class="px-6 py-3">6.0</td>
+<td class="px-6 py-3"><span class="px-2 py-1 bg-teal-100 text-teal-700 rounded text-[10px] font-bold">REAL</span></td>
+<td class="px-6 py-3 text-slate-400">温控区1实测温度</td>
+<td class="px-6 py-3 text-center text-green-500"><iconify-icon icon="mdi:check-circle"></iconify-icon></td>
+</tr>
+<tr class="hover:bg-blue-50/50 transition-colors">
+<td class="px-6 py-3">5</td>
+<td class="px-6 py-3 font-medium text-slate-900">PLC1_Batch_Counter</td>
+<td class="px-6 py-3">DB1001.DBW10.0</td>
+<td class="px-6 py-3">10.0</td>
+<td class="px-6 py-3"><span class="px-2 py-1 bg-purple-100 text-purple-700 rounded text-[10px] font-bold">INT</span></td>
+<td class="px-6 py-3 text-slate-400">当前批次计数</td>
+<td class="px-6 py-3 text-center text-green-500"><iconify-icon icon="mdi:check-circle"></iconify-icon></td>
+</tr>
+<!-- 模拟更多行 -->
+<tr class="hover:bg-blue-50/50 transition-colors">
+<td class="px-6 py-3">6</td>
+<td class="px-6 py-3 font-medium text-slate-900">PLC1_Valve_Open_FB</td>
+<td class="px-6 py-3">DB1001.DBX12.0</td>
+<td class="px-6 py-3">12.0</td>
+<td class="px-6 py-3"><span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-[10px] font-bold">BOOL</span></td>
+<td class="px-6 py-3 text-slate-400">进料阀开反馈</td>
+<td class="px-6 py-3 text-center text-green-500"><iconify-icon icon="mdi:check-circle"></iconify-icon></td>
+</tr>
+<tr class="hover:bg-blue-50/50 transition-colors">
+<td class="px-6 py-3">7</td>
+<td class="px-6 py-3 font-medium text-slate-900">PLC1_Alarm_Reset</td>
+<td class="px-6 py-3">DB1001.DBX12.1</td>
+<td class="px-6 py-3">12.1</td>
+<td class="px-6 py-3"><span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-[10px] font-bold">BOOL</span></td>
+<td class="px-6 py-3 text-slate-400">报警复位按钮</td>
+<td class="px-6 py-3 text-center text-green-500"><iconify-icon icon="mdi:check-circle"></iconify-icon></td>
+</tr>
+<tr class="hover:bg-blue-50/50 transition-colors">
+<td class="px-6 py-3">8</td>
+<td class="px-6 py-3 font-medium text-slate-900">PLC1_Total_Yield_DINT</td>
+<td class="px-6 py-3">DB1001.DBD14.0</td>
+<td class="px-6 py-3">14.0</td>
+<td class="px-6 py-3"><span class="px-2 py-1 bg-amber-100 text-amber-700 rounded text-[10px] font-bold">DINT</span></td>
+<td class="px-6 py-3 text-slate-400">累计产出总量</td>
+<td class="px-6 py-3 text-center text-green-500"><iconify-icon icon="mdi:check-circle"></iconify-icon></td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- 表格底部 -->
+<div class="px-6 py-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+<p class="text-[10px] text-slate-400">显示 1 到 8 条，共计 1,284 条数据</p>
+<div class="flex gap-1">
+<button class="w-6 h-6 border border-slate-200 rounded flex items-center justify-center text-slate-400 hover:bg-white"><iconify-icon icon="mdi:chevron-left"></iconify-icon></button>
+<button class="w-6 h-6 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-[10px]">1</button>
+<button class="w-6 h-6 border border-slate-200 rounded flex items-center justify-center text-slate-600 hover:bg-white text-[10px]">2</button>
+<button class="w-6 h-6 border border-slate-200 rounded flex items-center justify-center text-slate-600 hover:bg-white text-[10px]">3</button>
+<button class="w-6 h-6 border border-slate-200 rounded flex items-center justify-center text-slate-400 hover:bg-white"><iconify-icon icon="mdi:chevron-right"></iconify-icon></button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chartDom = document.getElementById('typeDistChart');
+            const myChart = echarts.init(chartDom);
+            const option = {
+                tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
+                legend: { bottom: '0%', left: 'center', icon: 'circle', textStyle: { fontSize: 10, color: '#64748b' } },
+                series: [{
+                    name: '变量类型',
+                    type: 'pie',
+                    radius: ['45%', '75%'],
+                    avoidLabelOverlap: false,
+                    itemStyle: { borderRadius: 10, borderColor: '#fff', borderWidth: 2 },
+                    label: { show: false },
+                    emphasis: { label: { show: true, fontSize: 14, fontWeight: 'bold' } },
+                    labelLine: { show: false },
+                    data: [
+                        { value: 842, name: 'BOOL', itemStyle: { color: '#2563eb' } },
+                        { value: 215, name: 'REAL', itemStyle: { color: '#14b8a6' } },
+                        { value: 128, name: 'INT', itemStyle: { color: '#a855f7' } },
+                        { value: 99, name: 'DINT', itemStyle: { color: '#f59e0b' } }
+                    ]
+                }]
+            };
+            myChart.setOption(option);
+            window.addEventListener('resize', () => myChart.resize());
+        });
+    </script>
+</body>
+</html>
