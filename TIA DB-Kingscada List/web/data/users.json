@@ -1,14 +1,14 @@
 [
     {
         "id": 1,
-        "username": "admin",
-        "password": "admin123",
-        "email": "admin@example.com"
+        "username": "ZHONGCANXIAO",
+        "password": "123456",
+        "email": "ZHONGCANXIAO@BEWG.COM"
     },
     {
         "id": 2,
-        "username": "user",
-        "password": "user123",
+        "username": "admin",
+        "password": "admin",
         "email": "user@example.com"
     }
 ]
