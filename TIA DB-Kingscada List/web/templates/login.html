@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>登录 - TIA DB 转换工具</title>
+    <link rel="icon" type="image/x-icon" href="/ico/hat_star_icon.ico">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <style>
@@ -114,6 +115,7 @@
                                 placeholder="jdoe.mobbin@gmail.com"
                                 class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 input-focus transition-all"
                                 required
+                                autocomplete="off"
                             />
                         </div>
                     </div>
@@ -135,6 +137,7 @@
                                 placeholder="Enter your password"
                                 class="w-full pl-10 pr-10 py-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 input-focus transition-all"
                                 required
+                                autocomplete="new-password"
                             />
                             <button 
                                 type="button" 
@@ -192,6 +195,10 @@
                 passwordInput.type = type;
                 togglePassword.innerHTML = type === 'password' ? '<i class="fa fa-eye text-sm"></i>' : '<i class="fa fa-eye-slash text-sm"></i>';
             });
+
+            // Clear username and password on page load
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
 
             // Form submission
             loginForm.addEventListener('submit', function(e) {

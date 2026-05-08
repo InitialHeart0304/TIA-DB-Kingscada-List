@@ -16,13 +16,15 @@ from src.core.converter import TiaToKingscadaConverter
 app = Flask(__name__)
 
 # 配置密钥，用于会话管理
-app.secret_key = 'your-secret-key-here-change-in-production'
+app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-here-change-in-production')
 
 # 配置模板目录 - 使用绝对路径
 app.root_path = os.path.dirname(os.path.abspath(__file__))
 app.template_folder = os.path.join(app.root_path, 'templates')
+app.static_folder = os.path.join(app.root_path, 'static')
 print(f"App root path: {app.root_path}")
 print(f"Template folder: {app.template_folder}")
+print(f"Static folder: {app.static_folder}")
 
 # 用户数据文件路径
 USERS_FILE = os.path.join(app.root_path, 'data', 'users.json')
@@ -46,11 +48,12 @@ def index():
         return redirect(url_for('login'))
     
     current_date = datetime.now().strftime("%Y年%m月%d日")
+    current_user = session.get('username', '')
     # 打印模板文件路径，用于调试
     template_path = os.path.join(app.template_folder, 'index.html')
     print(f"Template path: {template_path}")
     print(f"Template exists: {os.path.exists(template_path)}")
-    return render_template('index.html', current_date=current_date)
+    return render_template('index.html', current_date=current_date, current_user=current_user)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -75,6 +78,10 @@ def login():
 def logout():
     session.pop('username', None)
     return redirect(url_for('login'))
+
+@app.route('/ico/<path:filename>')
+def serve_ico(filename):
+    return send_file(os.path.join(app.root_path, 'ico', filename))
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
