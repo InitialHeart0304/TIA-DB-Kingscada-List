@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TIA DB-Kingscada</title>
-    <link rel="icon" type="image/x-icon" href="/static/ico/hat_star_icon.ico">
+    <link rel="icon" type="image/x-icon" href="/ico/hat_star_icon.ico">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
@@ -1241,28 +1241,13 @@
             if (downloadBtn) {
                 downloadBtn.addEventListener('click', function() {
                     console.log('下载文件');
-                    // 获取选中的导出格式
-                    const selectedFormat = document.querySelector('input[name="export-format"]:checked').value;
-                    console.log('选中的格式:', selectedFormat);
-                    
-                    // 获取用户填写的文件名
+                    // 获取选择的导出格式
+                    const format = document.querySelector('input[name="export-format"]:checked').value;
+                    // 获取文件名
                     const filename = document.getElementById('export-filename').value || 'conversion_result';
-                    console.log('文件名:', filename);
-                    
-                    // 获取选中的编码格式
-                    const encoding = document.getElementById('export-encoding').value;
-                    console.log('编码:', encoding);
-                    
-                    // 根据选中的格式跳转到对应的下载接口，并传递文件名参数
-                    let downloadUrl = '';
-                    if (selectedFormat === 'multi-sheet') {
-                        downloadUrl = `/download_multi_sheet?filename=${encodeURIComponent(filename)}`;
-                    } else {
-                        downloadUrl = `/download?filename=${encodeURIComponent(filename)}&encoding=${encoding}`;
-                    }
-                    
                     // 发送下载请求
-                    window.location.href = downloadUrl;
+                    const url = `/download?format=${encodeURIComponent(format)}&filename=${encodeURIComponent(filename)}`;
+                    window.location.href = url;
                 });
             }
             
@@ -1742,15 +1727,11 @@
                     <div class="space-y-4">
                         <div class="flex items-center">
                             <input type="radio" id="export-csv" name="export-format" value="csv" checked class="mr-2">
-                            <label for="export-csv">CSV 格式（单Sheet）</label>
+                            <label for="export-csv">CSV 格式</label>
                         </div>
                         <div class="flex items-center">
                             <input type="radio" id="export-excel" name="export-format" value="excel" class="mr-2">
-                            <label for="export-excel">Excel 格式（单Sheet）</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input type="radio" id="export-multi-sheet" name="export-format" value="multi-sheet" class="mr-2">
-                            <label for="export-multi-sheet">Excel 格式（多Sheet按IO类型）</label>
+                            <label for="export-excel">Excel 格式</label>
                         </div>
                         <div class="flex items-center">
                             <input type="radio" id="export-json" name="export-format" value="json" class="mr-2">
