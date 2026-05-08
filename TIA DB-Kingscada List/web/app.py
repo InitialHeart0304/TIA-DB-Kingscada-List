@@ -6,6 +6,7 @@ import os
 import sys
 from datetime import datetime
 import tempfile
+from openpyxl.styles import Font
 
 # 添加父目录到Python路径
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -197,6 +198,10 @@ def download():
             with pd.ExcelWriter(temp_file, engine='openpyxl') as writer:
                 for sheet_name, df in sheets.items():
                     df.to_excel(writer, sheet_name=sheet_name, index=False)
+                    workbook = writer.book
+                    worksheet = workbook[sheet_name]
+                    for cell in worksheet[1]:
+                        cell.font = Font(bold=True)
             return send_file(temp_file, as_attachment=True, download_name=f'{filename}.xlsx')
         elif export_format == 'json':
             # JSON格式 - 导出完整数据
