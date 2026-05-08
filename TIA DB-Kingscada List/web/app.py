@@ -178,6 +178,16 @@ def download():
             temp_file = os.path.join(TEMP_DIR, f"{filename}_{datetime.now().timestamp()}.xlsx")
             current_result['dataframe'].to_excel(temp_file, index=False, engine='openpyxl')
             return send_file(temp_file, as_attachment=True, download_name=f'{filename}.xlsx')
+        elif export_format == 'excel-multi':
+            # Excel格式（多Sheet）- 按数据类型分Sheet
+            temp_file = os.path.join(TEMP_DIR, f"{filename}_{datetime.now().timestamp()}.xlsx")
+            with pd.ExcelWriter(temp_file, engine='openpyxl') as writer:
+                # 按数据类型分组写入不同的Sheet
+                for dtype in current_result['dataframe']['TagDataType'].unique():
+                    sheet_name = str(dtype)[:31]  # Sheet名称最长31字符
+                    df_filtered = current_result['dataframe'][current_result['dataframe']['TagDataType'] == dtype]
+                    df_filtered.to_excel(writer, sheet_name=sheet_name, index=False)
+            return send_file(temp_file, as_attachment=True, download_name=f'{filename}.xlsx')
         elif export_format == 'json':
             # JSON格式
             temp_file = os.path.join(TEMP_DIR, f"{filename}_{datetime.now().timestamp()}.json")
