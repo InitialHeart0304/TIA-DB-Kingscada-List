@@ -319,3 +319,11 @@ class TiaToKingscadaConverter:
             'device_count': device_count
         }
         return stats
+    
+    def create_multi_sheet_dataframes(self, df):
+        """按数据类型分组生成多个DataFrame"""
+        sheets = {}
+        for dtype in df['TagDataType'].unique():
+            sheet_name = str(dtype)[:31]  # Sheet名称最长31字符
+            sheets[sheet_name] = df[df['TagDataType'] == dtype].copy()
+        return sheets
