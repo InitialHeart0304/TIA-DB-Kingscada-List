@@ -48,11 +48,12 @@ def index():
         return redirect(url_for('login'))
     
     current_date = datetime.now().strftime("%Y年%m月%d日")
+    current_user = session.get('username', '')
     # 打印模板文件路径，用于调试
     template_path = os.path.join(app.template_folder, 'index.html')
     print(f"Template path: {template_path}")
     print(f"Template exists: {os.path.exists(template_path)}")
-    return render_template('index.html', current_date=current_date)
+    return render_template('index.html', current_date=current_date, current_user=current_user)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
