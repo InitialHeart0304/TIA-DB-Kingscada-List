@@ -319,3 +319,44 @@ class TiaToKingscadaConverter:
             'device_count': device_count
         }
         return stats
+
+    def create_multi_sheet_dataframes(self, df):
+        """按TagDataType将数据拆分为多个DataFrame（多sheet）"""
+        # IO类型到sheet名称的映射
+        sheet_mapping = {
+            'IODisc': 'IO_DISC',
+            'IOChar': 'IO_CHAR',
+            'IOByte': 'IO_BYTE',
+            'IOShort': 'IO_SHORT',
+            'IOWord': 'IO_WORD',
+            'IOLong': 'IO_LONG',
+            'IODWord': 'IO_DWORD',
+            'IOInt64': 'IO_INT64',
+            'IOFloat': 'IO_FLOAT',
+            'IODouble': 'IO_DOUBLE',
+            'IOString': 'IO_STRING',
+            'IOBlob': 'IO_BLOB'
+        }
+
+        # 需要保留的字段（按用户要求）
+        output_fields = [
+            'TagID', 'TagName', 'Description', 'TagType', 'TagDataType',
+            'ChannelName', 'DeviceName', 'ChannelDriver', 'DeviceSeries', 
+            'DeviceSeriesType', 'CollectControl', 'CollectInterval', 
+            'CollectOffset', 'TimeZoneBias', 'TimeAdjustment', 'Enable', 
+            'ForceWrite', 'ItemName', 'RegName', 'RegType', 'ItemDataType', 
+            'ItemAccessMode', 'HisRecordMode', 'HisDeadBand', 'HisInterval', 'TagGroup'
+        ]
+
+        # 初始化所有sheet的空DataFrame
+        sheets = {}
+        for sheet_name in sheet_mapping.values():
+            sheets[sheet_name] = pd.DataFrame(columns=output_fields)
+
+        # 按TagDataType分组并填充到对应的sheet
+        for tag_type, group in df.groupby('TagDataType'):
+            sheet_name = sheet_mapping.get(tag_type)
+            if sheet_name:
+                sheets[sheet_name] = group[output_fields].reset_index(drop=True)
+
+        return sheets
