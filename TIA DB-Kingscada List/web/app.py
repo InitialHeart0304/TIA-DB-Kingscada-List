@@ -200,7 +200,7 @@ def download():
                     # 获取工作表对象，将第一行字体设为非粗体
                     worksheet = writer.sheets[sheet_name]
                     for cell in worksheet[1]:   # 第一行所有单元格
-                    cell.font = Font(bold=False)
+                        cell.font = Font(bold=False)
             return send_file(temp_file, as_attachment=True, download_name=f'{filename}.xlsx')
         elif export_format == 'json':
             # JSON格式 - 导出完整数据
