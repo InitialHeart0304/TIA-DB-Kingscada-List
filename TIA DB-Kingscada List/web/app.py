@@ -133,7 +133,7 @@ def convert():
         # 保存结果
         current_result = result
         
-        # 准备返回数据
+        # 准备返回数据（只返回前端显示需要的列）
         data = []
         for _, row in result['dataframe'].iterrows():
             data.append({
@@ -147,7 +147,8 @@ def convert():
         # 打印统计信息，用于调试
         print("转换结果统计:", result['stats'])
         print("数据框长度:", len(result['dataframe']))
-        print("返回数据长度:", len(data))
+        print("数据框列数:", len(result['dataframe'].columns))
+        print("数据框列名:", result['dataframe'].columns.tolist())
         
         return jsonify({
             'success': True,
@@ -174,12 +175,12 @@ def download():
     
     try:
         if export_format == 'excel' or export_format == 'xlsx':
-            # Excel格式（单Sheet）
+            # Excel格式（单Sheet）- 导出完整列
             temp_file = os.path.join(TEMP_DIR, f"{filename}_{datetime.now().timestamp()}.xlsx")
             current_result['dataframe'].to_excel(temp_file, index=False, engine='openpyxl')
             return send_file(temp_file, as_attachment=True, download_name=f'{filename}.xlsx')
         elif export_format == 'excel-multi':
-            # Excel格式（多Sheet）- 按数据类型分Sheet
+            # Excel格式（多Sheet）- 按数据类型分Sheet，导出完整列
             temp_file = os.path.join(TEMP_DIR, f"{filename}_{datetime.now().timestamp()}.xlsx")
             with pd.ExcelWriter(temp_file, engine='openpyxl') as writer:
                 # 按数据类型分组写入不同的Sheet
@@ -189,22 +190,14 @@ def download():
                     df_filtered.to_excel(writer, sheet_name=sheet_name, index=False)
             return send_file(temp_file, as_attachment=True, download_name=f'{filename}.xlsx')
         elif export_format == 'json':
-            # JSON格式
+            # JSON格式 - 导出完整数据
             temp_file = os.path.join(TEMP_DIR, f"{filename}_{datetime.now().timestamp()}.json")
-            result_data = []
-            for _, row in current_result['dataframe'].iterrows():
-                result_data.append({
-                    'TagID': row['TagID'],
-                    'TagName': row['TagName'],
-                    'Description': row['Description'],
-                    'TagDataType': row['TagDataType'],
-                    'ItemName': row['ItemName']
-                })
+            result_data = current_result['dataframe'].to_dict('records')
             with open(temp_file, 'w', encoding='utf-8') as f:
                 json.dump(result_data, f, ensure_ascii=False, indent=2)
             return send_file(temp_file, as_attachment=True, download_name=f'{filename}.json')
         else:
-            # 默认CSV格式
+            # 默认CSV格式 - 导出完整列
             temp_file = os.path.join(TEMP_DIR, f"{filename}_{datetime.now().timestamp()}.csv")
             current_result['dataframe'].to_csv(temp_file, index=False, encoding='gbk')
             return send_file(temp_file, as_attachment=True, download_name=f'{filename}.csv')
