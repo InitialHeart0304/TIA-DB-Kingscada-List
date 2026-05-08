@@ -168,13 +168,61 @@ def download():
     if not current_result:
         return jsonify({'success': False, 'error': 'No conversion result'})
     
+    # 获取用户填写的文件名和编码
+    filename = request.args.get('filename', 'conversion_result')
+    encoding = request.args.get('encoding', 'gbk')
+    
     # 创建临时CSV文件
-    temp_file = os.path.join(TEMP_DIR, f"conversion_result_{datetime.now().timestamp()}.csv")
-    current_result['dataframe'].to_csv(temp_file, index=False, encoding='gbk')
+    temp_file = os.path.join(TEMP_DIR, f"{filename}_{datetime.now().timestamp()}.csv")
+    current_result['dataframe'].to_csv(temp_file, index=False, encoding=encoding)
     
     # 发送文件
-    return send_file(temp_file, as_attachment=True, download_name='conversion_result.csv')
+    return send_file(temp_file, as_attachment=True, download_name=f'{filename}.csv')
 
+@app.route('/download_multi_sheet')
+def download_multi_sheet():
+    if not check_login():
+        return jsonify({'success': False, 'error': '请先登录'})
+        
+    global current_result
+    
+    if not current_result:
+        return jsonify({'success': False, 'error': 'No conversion result'})
+    
+    # 获取用户填写的文件名
+    filename = request.args.get('filename', 'conversion_multi_sheet')
+    
+    try:
+        # 创建转换器实例（用于调用create_multi_sheet_dataframes方法）
+        conv = TiaToKingscadaConverter({
+            "default_db_number": 3,
+            "start_tag_id": 50000,
+            "device_name": "PLC1",
+            "driver": "S71200Tcp",
+            "device_series": "S7-1200",
+            "tag_group": "PLC1.Device",
+            "collect_interval": 1000,
+            "his_interval": 60,
+            "channel_name": "以太网<192.168.10.11>"
+        })
+        
+        # 生成多sheet数据
+        sheets = conv.create_multi_sheet_dataframes(current_result['dataframe'])
+        
+        # 创建临时Excel文件
+        temp_file = os.path.join(TEMP_DIR, f"{filename}_{datetime.now().timestamp()}.xlsx")
+        
+        # 使用openpyxl写入多sheet
+        with pd.ExcelWriter(temp_file, engine='openpyxl') as writer:
+            for sheet_name, df in sheets.items():
+                df.to_excel(writer, sheet_name=sheet_name, index=False)
+        
+        # 发送文件
+        return send_file(temp_file, as_attachment=True, download_name=f'{filename}.xlsx')
+    
+    except Exception as e:
+        print("多sheet导出错误:", str(e))
+        return jsonify({'success': False, 'error': str(e)})
 
 
 if __name__ == '__main__':
