@@ -180,24 +180,24 @@ def download():
             current_result['dataframe'].to_excel(temp_file, index=False, engine='openpyxl')
             return send_file(temp_file, as_attachment=True, download_name=f'{filename}.xlsx')
         elif export_format == 'excel-multi':
-            # 生成多sheet数据
-        sheets = conv.create_multi_sheet_dataframes(current_result['dataframe'])
-        
-        # 创建临时Excel文件
-        temp_file = os.path.join(TEMP_DIR, f"{filename}_{datetime.now().timestamp()}.xlsx")
-        
-        # 使用openpyxl写入多sheet
-        with pd.ExcelWriter(temp_file, engine='openpyxl') as writer:
-            for sheet_name, df in sheets.items():
-                df.to_excel(writer, sheet_name=sheet_name, index=False)
-        
-        # 发送文件
-        return send_file(temp_file, as_attachment=True, download_name=f'{filename}.xlsx')
-    
-    except Exception as e:
-        print("多sheet导出错误:", str(e))
-        return jsonify({'success': False, 'error': str(e)})
-
+            # Excel格式（多Sheet）- 按数据类型分Sheet
+            conv = TiaToKingscadaConverter({
+                'default_db_number': 3,
+                'start_tag_id': 50000,
+                'device_name': 'PLC1',
+                'driver': 'S71200Tcp',
+                'device_series': 'S7-1200',
+                'tag_group': 'PLC1.Device',
+                'collect_interval': 1000,
+                'his_interval': 60,
+                'channel_name': '以太网<192.168.10.11>'
+            })
+            sheets = conv.create_multi_sheet_dataframes(current_result['dataframe'])
+            temp_file = os.path.join(TEMP_DIR, f"{filename}_{datetime.now().timestamp()}.xlsx")
+            with pd.ExcelWriter(temp_file, engine='openpyxl') as writer:
+                for sheet_name, df in sheets.items():
+                    df.to_excel(writer, sheet_name=sheet_name, index=False)
+            return send_file(temp_file, as_attachment=True, download_name=f'{filename}.xlsx')
         elif export_format == 'json':
             # JSON格式 - 导出完整数据
             temp_file = os.path.join(TEMP_DIR, f"{filename}_{datetime.now().timestamp()}.json")
