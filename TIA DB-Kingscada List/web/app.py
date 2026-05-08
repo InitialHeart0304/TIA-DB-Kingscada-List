@@ -168,12 +168,39 @@ def download():
     if not current_result:
         return jsonify({'success': False, 'error': 'No conversion result'})
     
-    # 创建临时CSV文件
-    temp_file = os.path.join(TEMP_DIR, f"conversion_result_{datetime.now().timestamp()}.csv")
-    current_result['dataframe'].to_csv(temp_file, index=False, encoding='gbk')
+    # 获取格式参数
+    export_format = request.args.get('format', 'csv').lower()
+    filename = request.args.get('filename', 'conversion_result')
     
-    # 发送文件
-    return send_file(temp_file, as_attachment=True, download_name='conversion_result.csv')
+    try:
+        if export_format == 'excel' or export_format == 'xlsx':
+            # Excel格式（单Sheet）
+            temp_file = os.path.join(TEMP_DIR, f"{filename}_{datetime.now().timestamp()}.xlsx")
+            current_result['dataframe'].to_excel(temp_file, index=False, engine='openpyxl')
+            return send_file(temp_file, as_attachment=True, download_name=f'{filename}.xlsx')
+        elif export_format == 'json':
+            # JSON格式
+            temp_file = os.path.join(TEMP_DIR, f"{filename}_{datetime.now().timestamp()}.json")
+            result_data = []
+            for _, row in current_result['dataframe'].iterrows():
+                result_data.append({
+                    'TagID': row['TagID'],
+                    'TagName': row['TagName'],
+                    'Description': row['Description'],
+                    'TagDataType': row['TagDataType'],
+                    'ItemName': row['ItemName']
+                })
+            with open(temp_file, 'w', encoding='utf-8') as f:
+                json.dump(result_data, f, ensure_ascii=False, indent=2)
+            return send_file(temp_file, as_attachment=True, download_name=f'{filename}.json')
+        else:
+            # 默认CSV格式
+            temp_file = os.path.join(TEMP_DIR, f"{filename}_{datetime.now().timestamp()}.csv")
+            current_result['dataframe'].to_csv(temp_file, index=False, encoding='gbk')
+            return send_file(temp_file, as_attachment=True, download_name=f'{filename}.csv')
+    except Exception as e:
+        print("下载错误:", str(e))
+        return jsonify({'success': False, 'error': str(e)})
 
 
 

@@ -1241,8 +1241,13 @@
             if (downloadBtn) {
                 downloadBtn.addEventListener('click', function() {
                     console.log('下载文件');
+                    // 获取选择的导出格式
+                    const format = document.querySelector('input[name="export-format"]:checked').value;
+                    // 获取文件名
+                    const filename = document.getElementById('export-filename').value || 'conversion_result';
                     // 发送下载请求
-                    window.location.href = '/download';
+                    const url = `/download?format=${encodeURIComponent(format)}&filename=${encodeURIComponent(filename)}`;
+                    window.location.href = url;
                 });
             }
             
@@ -1757,9 +1762,9 @@
                     <button id="back-to-check-btn" class="bg-gray-100 border border-gray-300 px-6 py-2 rounded-md text-secondary hover:bg-gray-50">
                         返回核对
                     </button>
-                    <a href="/download" class="bg-primary text-white px-6 py-2 rounded-md hover:bg-blue-600 transition-colors">
+                    <button id="download-btn" class="bg-primary text-white px-6 py-2 rounded-md hover:bg-blue-600 transition-colors">
                         下载文件
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
