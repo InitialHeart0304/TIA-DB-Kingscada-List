@@ -6,7 +6,7 @@ import os
 import sys
 from datetime import datetime
 import tempfile
-from openpyxl.styles import Font
+from openpyxl.styles import Font, Border
 # 添加父目录到Python路径
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -201,9 +201,7 @@ def download():
                     worksheet = writer.sheets[sheet_name]
                     for cell in worksheet[1]:   # 第一行所有单元格
                         cell.font = Font(bold=False)
-                    for row in worksheet.iter_rows(min_row=1, max_row=1):
-                        for cell in row:
-                            cell.border = Border()  # 等同于无边框
+                        cell.border = Border()  # 等同于无边框
             return send_file(temp_file, as_attachment=True, download_name=f'{filename}.xlsx')
         elif export_format == 'json':
             # JSON格式 - 导出完整数据
