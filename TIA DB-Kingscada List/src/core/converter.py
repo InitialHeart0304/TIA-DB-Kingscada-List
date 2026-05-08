@@ -247,6 +247,12 @@ class TiaToKingscadaConverter:
             if data_type == 'Bool':
                 bit_part = int(round((offset - byte_part) * 10))
                 return f"DB{db_number}.{byte_part}.{bit_part}"
+            elif data_type in ['Int', 'UInt', 'Word']:
+                return f"DB{db_number}.DBX{byte_part}.0"
+            elif data_type in ['DInt', 'DWord']:
+                return f"DB{db_number}.DBX{byte_part}.0"
+            elif data_type == 'Real':
+                return f"DB{db_number}.DBX{byte_part}.0"
             else:
                 return f"DB{db_number}.{byte_part}"
 
@@ -321,9 +327,44 @@ class TiaToKingscadaConverter:
         return stats
     
     def create_multi_sheet_dataframes(self, df):
-        """按数据类型分组生成多个DataFrame"""
+        """按TagDataType将数据拆分为多个DataFrame（多sheet）"""
+        # IO类型到sheet名称的映射
+        sheet_mapping = {
+            'IODisc': 'IO_DISC',
+            'IOChar': 'IO_CHAR',
+            'IOByte': 'IO_BYTE',
+            'IOShort': 'IO_SHORT',
+            'IOWord': 'IO_WORD',
+            'IOLong': 'IO_LONG',
+            'IODWord': 'IO_DWORD',
+            'IOUDword': 'IO_DWORD',
+            'IOInt64': 'IO_INT64',
+            'IOFloat': 'IO_FLOAT',
+            'IODouble': 'IO_DOUBLE',
+            'IOString': 'IO_STRING',
+            'IOString': 'IO_STRING',
+            'IOBlob': 'IO_BLOB'
+        }
+
+        # 需要保留的字段（按用户要求）
+        output_fields = [
+            'TagID', 'TagName', 'Description', 'TagType', 'TagDataType',
+            'ChannelName', 'DeviceName', 'ChannelDriver', 'DeviceSeries',
+            'DeviceSeriesType', 'CollectControl', 'CollectInterval',
+            'CollectOffset', 'TimeZoneBias', 'TimeAdjustment', 'Enable',
+            'ForceWrite', 'ItemName', 'RegName', 'RegType', 'ItemDataType',
+            'ItemAccessMode', 'HisRecordMode', 'HisDeadBand', 'HisInterval', 'TagGroup'
+        ]
+
+        # 初始化所有sheet的空DataFrame
         sheets = {}
+        for sheet_name in sheet_mapping.values():
+            sheets[sheet_name] = pd.DataFrame(columns=output_fields)
+        
+        # 按TagDataType分组填充数据
         for dtype in df['TagDataType'].unique():
-            sheet_name = str(dtype)[:31]  # Sheet名称最长31字符
-            sheets[sheet_name] = df[df['TagDataType'] == dtype].copy()
+            sheet_name = sheet_mapping.get(dtype, str(dtype)[:31])
+            if sheet_name in sheets:
+                sheets[sheet_name] = df[df['TagDataType'] == dtype][output_fields].copy()
+        
         return sheets
